@@ -106,6 +106,7 @@ const scopes = "offline_access openid profile email accounting.transactions acco
 // bankfeeds
 // finance.accountingactivity.read finance.bankstatementsplus.read finance.cashvalidation.read finance.statements.read
 
+
 const xero = new XeroClient({
   clientId: client_id,
   clientSecret: client_secret,
@@ -118,6 +119,7 @@ const xero = new XeroClient({
 if (!client_id || !client_secret || !redirectUrl) {
   throw Error('Environment Variables not all set - please check your .env file in the project root or create one!')
 }
+
 
 class App {
   public app: express.Application;
@@ -445,6 +447,8 @@ class App {
       }
     });
 
+    // 🔴🔴🔴 DESACTIVADOS POR QUE ALGUNS CRIAM CONTACTOS (Rick James)
+
     router.get("/budgets", async (req: Request, res: Response) => {
       try {
         // GET ALL
@@ -468,6 +472,7 @@ class App {
         });
       }
     });
+    
 
     router.get("/banktransactions", async (req: Request, res: Response) => {
       try {
@@ -790,6 +795,8 @@ class App {
         const newContacts: Contacts = new Contacts();
         newContacts.contacts = [contact1];
         const contactCreateResponse = await xero.accountingApi.createContacts(req.session.activeTenant.tenantId, newContacts);
+
+
         const contactId = contactCreateResponse.body.contacts[0].contactID;
 
         // UPDATE or CREATE BATCH - force validation error
@@ -1184,7 +1191,10 @@ class App {
 
     router.get("/invoices", async (req: Request, res: Response) => {
       try {
+
         const brandingTheme = await xero.accountingApi.getBrandingThemes(req.session.activeTenant.tenantId);
+
+        // ESTE CODE CRIA CONTACTO DESNECESSÁRIOS
         const num = Helper.getRandomNumber(1000000)
         const contact1: Contact = { name: "Test User: " + num, firstName: "Rick", lastName: "James", emailAddress: req.session.decodedIdToken.email };
         const newContacts: Contacts = new Contacts();
