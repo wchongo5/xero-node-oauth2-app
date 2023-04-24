@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<%- include('shared/head') -%>
+
+   <body>
+      <div class='core-content'>
+         <div class='body-wrapper'>
+            <div class='nav-settings'>
+               <form>
+                  <label for="customerId">Select customer:</label>
+                  <select name='customerId' class="select-box" onchange="displayCustomerId()">
+                     <% for(var i=0; i < invoices.body.invoices.length; i++) { %>
+                        <% var invoiceContact=invoices.body.invoices[i].contact.name %>
+                           <option value=<%=invoices.body.invoices[i].contact.contactID%>>
+                              <%= invoiceContact %>
+                           </option>
+                           <% } %>
+                  </select>
+                  <br>
+                  <label id="selectedCustomerId"></label>
+                  <br>
+                  <label for="invoiceNumbers">Available invoice numbers:</label>
+               </form>
+               <form>
+                  <label for="invoiceId">Available invoice numbers:</label>
+                  <select name='customerId' class="select-box" onchange="displayInvoiceNumber()">
+                     <% for(var i=0; i < invoices.body.invoices.length; i++) { %>
+                        <% var invoiceContact=invoices.body.invoices[i].contact.name %>
+                           <option value=<%=invoices.body.invoices[i].contact.contactID%>>
+                              <%= invoiceContact %>
+                           </option>
+                           <% } %>
+                  </select>
+                  <br>
+                  <label id="selectedCustomerId"></label>
+                  <br>
+                  <label for="invoiceNumbers">Available invoice numbers:</label>
+                 
+               </form>
+            </div>
+         </div>
+      </div>
+      <script>
+         function displayCustomerId() {
+            const selectBox = document.querySelector('.select-box');
+            const selectedCustomerId = selectBox.options[selectBox.selectedIndex].value;
+            document.getElementById('selectedCustomerId').innerHTML = "Selected customer ID: " + selectedCustomerId;
+         }
+      </script>
+   </body>
+
+</html>

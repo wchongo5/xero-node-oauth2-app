@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+<%- include('shared/head') -%>
+
+   <body>
+      <div class='core-content'>
+         <div class='body-wrapper'>
+            <div class='nav-settings'>
+               <h1>Thanks Hossy</h1>
+            </div>
+         </div>
+      </div>
+      <script>
+         function displayCustomerId() {
+            const selectBox = document.querySelector('.select-box');
+            const selectedCustomerId = selectBox.options[selectBox.selectedIndex].value;
+            document.getElementById('selectedCustomerId').innerHTML = "Selected customer ID: " + selectedCustomerId;
+         }
+      </script>
+   </body>
+
+</html>

@@ -1,0 +1,36 @@
+
+<!doctype html>
+<html>
+<%- include('shared/head') -%>
+
+   <body>
+      <!-- <%- include('shared/nav') -%> -->
+      <div class='core-content'>
+         <!-- <%- include('shared/header') -%> -->
+         <div class='body-wrapper'>
+            <div class='nav-settings'>
+               
+               <!-- <h1>Invoice Payment</h1> -->
+               <!-- <form method='POST' action="/select-customer"> -->
+               <!-- <label for="customerID"></label> -->
+
+               <form method='POST' action="/select-customer">
+                  <select name='customerId' class="select-box">
+
+                     <% for(var i=0; i < invoices.body.invoices.length; i++) { %>
+            
+                        <%var invoiceContact=invoices.body.invoices[i].contact.name%>
+
+                        <option <%=invoiceContact %> value=<%= invoices.body.invoices[i].contact.contactID%>>
+                              <%= invoiceContact %>
+                        </option>
+                        <% } %>
+                  </select>
+
+               </form>
+            </div>
+         </div>
+      </div>
+   </body>
+
+</html>

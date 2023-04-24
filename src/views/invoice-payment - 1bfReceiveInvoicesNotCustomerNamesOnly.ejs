@@ -1,0 +1,32 @@
+
+<!doctype html>
+<html>
+<%- include('shared/head') -%>
+
+   <body>
+      <!-- <%- include('shared/nav') -%> -->
+      <div class='core-content'>
+         <!-- <%- include('shared/header') -%> -->
+         <div class='body-wrapper'>
+            <div class='nav-settings'>
+               
+               <!-- <h1>Invoice Payment</h1> -->
+               <form method='POST' action="/select-customer">
+                  <select name='customer' class="select-box">
+
+                     <% for(var i=0; i < invoicesContacts.length; i++) { %>
+            
+                        <%var invoiceContact=invoicesContacts[i]%>
+                        <option <%=invoiceContact %> value=<%= invoiceContact %>>
+                              <%= invoiceContact %>
+                        </option>
+                        <% } %>
+                  </select>
+                  <input type="submit" class="select-input" value="Change Org">
+               </form>
+            </div>
+         </div>
+      </div>
+   </body>
+
+</html>

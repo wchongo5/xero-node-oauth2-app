@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+<%- include('shared/head') -%>
+
+   <body>
+      <div class='core-content'>
+         <div class='body-wrapper'>
+            <div class='nav-settings'>
+               <form>
+                  <label for="customerId">Select customer:</label>
+                  <select name='customerId' class="select-box" onchange="displayCustomerId()">
+                     <% for(var i=0; i < invoices.body.invoices.length; i++) { %>
+                        <% var invoiceContact=invoices.body.invoices[i].contact.name %>
+                           <option value=<%=invoices.body.invoices[i].contact.contactID%>>
+                              <%= invoiceContact %>
+                           </option>
+                           <% } %>
+                  </select>
+                  <br>
+                  <label id="selectedCustomerId"></label>
+                  <br>
+               </form>
+               <form>
+                  <label for="invoiceId">Select invoice number:</label>
+                  <select name='invoiceId' class="select-box" onchange="displayInvoiceNumbers()">
+                     <% for (var i=0; i < invoices.body.invoices.length; i++) { %>
+                        <% if (invoices.body.invoices[i].contact.contactID===selectedCustomerId) { %>
+                           <option value="<%= invoices.body.invoices[i].invoiceNumber %>">
+                              <%= invoices.body.invoices[i].invoiceNumber %>
+                           </option>
+                           <% } %>
+                              <% } %>
+                  </select>
+                  <br>
+               </form>
+            </div>
+         </div>
+      </div>
+      <script>
+         function displayCustomerId() {
+            const selectBox = document.querySelector('.select-box');
+            const selectedCustomerId = selectBox.options[selectBox.selectedIndex].value;
+            document.getElementById('selectedCustomerId').innerHTML = "Selected customer ID: " + selectedCustomerId;
+         }
+      </script>
+   </body>
+
+</html>

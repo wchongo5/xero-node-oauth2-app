@@ -1,4 +1,4 @@
 import app from "./app";
 
-const PORT = process.env.PORT || 3000; // Was 5000
+const PORT = process.env.PORT || 3000; // Deve ser ser 3000 // Was 5000
 app.listen(PORT, () => console.log(`App listening on port ${PORT}!`));
