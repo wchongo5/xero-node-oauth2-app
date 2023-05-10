@@ -1,0 +1,162 @@
+h1 {
+   text-align: center;
+}
+
+form {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   justify-content: center;
+   margin: 50px auto;
+   max-width: 500px;
+   padding: 20px;
+   border-radius: 8px;
+   box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* label {
+   font-weight: bold;
+   margin-bottom: 5px;
+} */
+
+label {
+   font-weight: 600;
+   margin-bottom: 25px;
+   font-size: 14px;
+}
+
+input {
+   padding: 10px;
+   margin-bottom: 15px;
+   border-radius: 4px;
+   border: 1px solid #ccc;
+   font-size: 16px;
+   width: 100%;
+   box-sizing: border-box;
+}
+
+input[type="submit"] {
+   background-color: #0099ff;
+   color: #fff;
+   cursor: pointer;
+}
+
+input[type="submit"]:hover {
+   background-color: #0077cc;
+}
+
+button[type="submit"] {
+   background-color: #0077cc;
+   color: #fff;
+   padding: 10px 20px;
+   border-radius: 4px;
+   border: none;
+   font-size: 16px;
+   cursor: pointer;
+   transition: background-color 0.2s ease-in-out;
+   width: 100%;
+   /* set button width to 100% */
+}
+
+button[type="submit"]:hover {
+   background-color: #005fa3;
+}
+
+.submitButton:disabled {
+   cursor: not-allowed;
+   background-color: #005fa3a0;
+}
+
+.error-message {
+   color: red;
+   margin-bottom: 10px;
+   font-size: 14px;
+   font-weight: bold;
+}
+
+.invoice-details {
+   display: flex;
+   justify-content: space-between;
+}
+
+select,
+button {
+   /* margin-bottom: 15px; */
+   margin-bottom: 15px;
+}
+
+select {
+   padding: 10px;
+   margin-bottom: 15px;
+   border-radius: 4px;
+   border: 1px solid #ccc;
+   font-size: 16px;
+   width: 100%;
+   box-sizing: border-box;
+   appearance: none;
+}
+
+form {
+   background-color: #f8f8f8;
+}
+
+.form-control {
+   margin-bottom: 15px;
+   width: 100%;
+}
+
+.form-control-finance {
+   margin-bottom: 15px;
+   width: 100%;
+   color: grey;
+}
+
+.custom-select {
+   background-color: #eae8e8;
+   border: 1px solid #ccc;
+   border-radius: 4px;
+   padding: 10px;
+   font-size: 16px;
+   width: 100%;
+   box-sizing: border-box;
+   /* appearance: auto; */
+   appearance: none;
+   /* -webkit-appearance: menulist; */
+   /* For Chrome and Safari */
+   /* -moz-appearance: menulist; */
+   /* For Firefox */
+   /* -ms-appearance: menulist; */
+   /* For IE and Edge */
+}
+
+
+.payments-control {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   justify-content: center;
+   margin: 30px auto;
+   max-width: 500px;
+   padding: 20px;
+   border-radius: 8px;
+   box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+   color: red;
+}
+
+.payments-control h2 {
+   margin-bottom: 20px;
+}
+
+.payments-control p {
+   font-size: 16px;
+   margin-bottom: 10px;
+}
+
+.payments-control p:last-child {
+   margin-bottom: 0;
+}
+
+.amount-due {
+   color: red;
+}
+

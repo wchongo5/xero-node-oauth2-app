@@ -491,6 +491,7 @@ class App {
           quantity: 1.0,
           unitAmount: 20.0,
           accountCode: validAccountCode,
+           
         }];
         const where = 'Status=="' + Account.StatusEnum.ACTIVE + '" AND Type=="' + Account.BankAccountTypeEnum.BANK + '"';
         const accountsResponse = await xero.accountingApi.getAccounts(req.session.activeTenant.tenantId, null, where);

@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { TokenSetParameters } from 'xero-node'
 import {
+  Account,
   Payments,
   XeroAccessToken,
   XeroClient,
@@ -9,51 +10,34 @@ import {
 import jwtDecode from 'jwt-decode';
 import { xero } from "./xeroClient";
 import { verifyWebhookEventSignature, authenticationData } from "./helpers";
+// import formidable from 
+// import formidable from 'formidable';
+import axios from "axios";
+import moment from 'moment';
 
 const client_id = process.env.CLIENT_ID;
 const client_secret = process.env.CLIENT_SECRET;
 
 
-/*
-export async function home(req: Request, res: Response) {
-  if (req.session.tokenSet) {
-    // This reset the session and required data on the xero client after ts recompile
-    await xero.setTokenSet(req.session.tokenSet)
-    await xero.updateTenants(false)
-  }
 
-  try {
-    const authData = authenticationData(req, res)
+// Xero start or before to include ALL. 🔴🔴🔴 Undefined raises error
+// const ifModifiedSinceDate = `2015/01/01`
 
-    // res.json({
-    res.render("home", {
-      consentUrl: await xero.buildConsentUrl(),
-      authenticated: authData
-    });
-  } catch (e) {
-    res.status(res.statusCode);
-    // res.json({
-    res.render("shared/error", {
-      consentUrl: await xero.buildConsentUrl(),
-      error: e
-    });
-  }
-}
-*/
 
 export async function home(req: Request, res: Response) {
-  if (req.session.tokenSet) {
-    await xero.setTokenSet(req.session.tokenSet)
-    await xero.updateTenants(false)
-  }
-
+  
   try {
+    if (req.session.tokenSet) {
+      await xero.setTokenSet(req.session.tokenSet)
+      // xero.setTokenSet(req.session.tokenSet)
+      await xero.updateTenants(false)
+    }
     const authData = authenticationData(req, res)
 
     res.render("home", {
       consentUrl: await xero.buildConsentUrl(),
       authenticated: authData,
-      accessToken: req.session.tokenSet ? req.session.tokenSet.access_token : null, // Pass the access token to the client
+      // accessToken: req.session.tokenSet ? req.session.tokenSet.access_token : null, // Pass the access token to the client
     });
   } catch (e) {
     res.status(res.statusCode);
@@ -101,7 +85,6 @@ export async function callback(req: Request, res: Response) {
   }
 }
 
-
 // Created by ChatGPT. Useful for future.
 // Not avalible in original functions
 // Exported but not used
@@ -114,8 +97,6 @@ export async function connect(_req: Request, res: Response) {
     res.render("error", { err: err.message });
   }
 }
-
-
 
 export async function changeOrganisation(req: Request, res: Response) {
   try {
@@ -216,7 +197,6 @@ export async function disconnect(req: Request, res: Response) {
   }
 }
 
-
 export async function revokeToken(req: Request, res: Response) {
   try {
     await xero.revokeToken();
@@ -244,113 +224,308 @@ export async function webhooks(req: Request, res: Response) {
   verifyWebhookEventSignature(req) ? res.status(200).send() : res.status(401).send();
 }
 
-export async function getAccessToken(req: Request, res: Response) {
-  if (req.session.tokenSet) {
-    res.status(200).json({ access_token: req.session.tokenSet.access_token });
-  } else {
-    res.status(401).json({ error: 'Not authenticated' });
+// export async function getAccessToken(req: Request, res: Response) {
+//   try {
+//     if (req.session.tokenSet) {
+//       res.status(200).json({ access_token: req.session.tokenSet.access_token });
+//     } else {
+//       throw new Error('Not authenticated');
+//     }
+//   } catch (error) {
+//     res.status(401).json({ error: error.message });
+//   }
+// }
+
+export async function organisation(req: Request, res: Response) {
+  try {
+
+    var tenantId = "33b67fb1-e1c6-414c-bc39-c4305af2146f"
+
+    //GET ALL
+    const getOrganizationsResponse = await xero.accountingApi.getOrganisations(tenantId);
+
+    res.status(200).json({
+      consentUrl: await xero.buildConsentUrl(),
+      // authenticated: this.authenticationData(req, res),
+      orgs: getOrganizationsResponse.body.organisations
+    });
+
+  } catch (e) {
+    res.status(res.statusCode);
+    res.json({
+      consentUrl: await xero.buildConsentUrl(),
+      error: e
+    });
+  }
+};
+
+export async function organisations(req: Request, res: Response) {
+  try {
+
+    const allOrganisations = xero.tenants
+
+    res.status(200).json({
+      consentUrl: await xero.buildConsentUrl(),
+      orgs: allOrganisations
+    });
+
+  } catch (e) {
+    res.status(res.statusCode);
+    res.json({
+      consentUrl: await xero.buildConsentUrl(),
+      error: e
+    });
+  }
+};
+
+// export async function accounts(req: Request, res: Response) {
+
+//   var tenantId = "33b67fb1-e1c6-414c-bc39-c4305af2146f"
+
+//   try {
+    
+//     const where = 'Status=="' + Account.StatusEnum.ACTIVE + '" AND Type=="' + Account.BankAccountTypeEnum.BANK + '"';
+//     const accountsGetResponse = await xero.accountingApi.getAccounts(tenantId, null, where);
+
+//     res.json({
+//       consentUrl: await xero.buildConsentUrl(),
+//       accounts: accountsGetResponse.body.accounts,
+//     });
+//   } catch (e) {
+//     res.status(res.statusCode);
+//     res.json({
+//       consentUrl: await xero.buildConsentUrl(),
+//       error: e
+//     });
+//   }
+// }
+
+export async function accounts(req: Request, res: Response) {
+  try {
+    const tenantId = req.query.tenantId as string;
+
+    if (!tenantId) {
+      res.status(400);
+      res.json({ error: "Missing tenantId query parameter" });
+      return;
+    }
+
+    const where =
+      'Status=="' +
+      Account.StatusEnum.ACTIVE +
+      '" AND Type=="' +
+      Account.BankAccountTypeEnum.BANK +
+      '"';
+    const accountsGetResponse = await xero.accountingApi.getAccounts(
+      tenantId,
+      null,
+      where
+    );
+
+    res.json({
+      consentUrl: await xero.buildConsentUrl(),
+      accounts: accountsGetResponse.body.accounts,
+    });
+  } catch (e) {
+    res.status(res.statusCode);
+    res.json({
+      consentUrl: await xero.buildConsentUrl(),
+      error: e,
+    });
   }
 }
 
-/*
-export async function payments(req: Request, res: Response) {
+
+// export async function getInvoicesToPay(req: Request, res: Response) {
+
+// export async function contactsToPay(req: Request, res: Response) {
+//   try {
+//     const { tenantId, startDate } = req.body;
+
+//     try {
+//       const invoices = await xero.accountingApi.getInvoices(
+//         tenantId,
+//         undefined, //new Date(startDate),
+//         // `Type=="ACCREC" && Date >= "${startDate}"`
+//         // `Type=="ACCREC" && Date >= DateTime(${startDate})`,
+//         // `Type=="ACCREC" AND Date >= "DateTime(${startDate})"`, //, //'Type=="ACCREC"',
+//         `Type=="ACCREC"`,
+//         undefined,
+//         undefined,
+//         undefined,
+//         undefined,
+//         ['AUTHORISED'],
+//         0,
+//         false,
+//         false,
+//         4,
+//         true,
+//         {
+//           headers: {
+//             'contentType': 'application/json',
+//           },
+//         }
+//       );
+
+//       // var contactsToPay = invoices.body.invoices.map(item => [item.contact.contactID, item.contact.name]);
+
+//       const startDateObj = new Date(startDate);
+
+//       const filteredInvoices = invoices.body.invoices.filter((invoice) => {
+//         const invoiceDate = new Date(invoice.date);
+//         return invoiceDate >= startDateObj;
+//       });
+
+//       var contactsToPay = []
+//       for (var i = 0; i < filteredInvoices.length; i++) {
+//         var contact = filteredInvoices[i].contact
+//         var contactInfo = [contact.contactID, contact.name]
+
+//         if (!contactsToPay.toString().includes(contactInfo[1])) {
+//           contactsToPay.push(contactInfo)
+
+//           console.log(contactInfo[1])
+//         }
+//       }
+
+//       res.json({
+//         consentUrl: await xero.buildConsentUrl(),
+//         contacts: contactsToPay,
+//       });
+
+//     } catch (error) {
+//       console.log(error);
+//     }
+
+//   } catch (e) {
+//     res.setHeader("Content-Type", "application/json");
+//     res.status(res.statusCode);
+//     res.json({
+//       error: e.message,
+//       consentUrl: await xero.buildConsentUrl(),
+//     });
+//   }
+// }
+
+// export async function contactsToPay(req: Request, res: Response) {
+//   try {
+//     const { tenantId, startDate } = req.body;
+
+//     try {
+//       const invoices = await xero.accountingApi.getInvoices(
+//         tenantId,
+//         undefined,
+//         `Type=="ACCREC"`,
+//         undefined,
+//         undefined,
+//         undefined,
+//         undefined,
+//         ['AUTHORISED'],
+//         0,
+//         false,
+//         false,
+//         4,
+//         true,
+//         {
+//           headers: {
+//             'contentType': 'application/json',
+//           },
+//         }
+//       );
+
+//       // Create a Date object without timezone issues
+//       const [year, month, day] = startDate.split('-');
+//       const startDateObj = new Date(Date.UTC(year, month - 1, day));
+
+//       const filteredInvoices = invoices.body.invoices.filter((invoice) => {
+//         const invoiceDate = new Date(invoice.date);
+//         return invoiceDate >= startDateObj;
+//       });
+
+//       const contactsToPay = [];
+//       for (let i = 0; i < filteredInvoices.length; i++) {
+//         const contact = filteredInvoices[i].contact;
+//         const contactInfo = [contact.contactID, contact.name];
+
+//         if (!contactsToPay.toString().includes(contactInfo[1])) {
+//           contactsToPay.push(contactInfo);
+//         }
+//       }
+
+//       res.json({
+//         consentUrl: await xero.buildConsentUrl(),
+//         contacts: contactsToPay,
+//       });
+
+//     } catch (error) {
+//       console.log(error);
+//     }
+
+//   } catch (e) {
+//     res.setHeader("Content-Type", "application/json");
+//     res.status(res.statusCode);
+//     res.json({
+//       error: e.message,
+//       consentUrl: await xero.buildConsentUrl(),
+//     });
+//   }
+// }
+
+export async function contactsToPay(req: Request, res: Response) {
   try {
+    const { tenantId, startDate } = req.body;
 
-    console.log("YES555");
-
-    var cs = "XDWFPU221001" // Cooperativa Q17
-    const yy = cs.slice(6,8)
-    const startDateStr = `20${yy}/01/01`
-
-    var referenceStr = 'XFAP5 Residência Unifamiliar / Banco'
-    var referenceStr = 'XFUP5 Plano de Pormenor / Banco'
-    var accountCode = "B01" // WALLET
-    var accountCode = "B05" // BIM1
-    // var accountCode = "B06" // BIM2
-
-    var yyyy__mm__dd = "2023-04-19"
-    var amountNum = 9.11
-
-    var tenantId = "33b67fb1-e1c6-414c-bc39-c4305af2146f" // X-DIM
-
-    //GET ALL
-   //  const getPaymentsResponse = await xero.accountingApi.getPayments(req.session.activeTenant.tenantId);
-    const getPaymentsResponse = await xero.accountingApi.getPayments(tenantId);
+    var ifModifiedSinceDate = `${startDate.split("-")[0]}/01/01`
 
     try {
-
       const invoices = await xero.accountingApi.getInvoices(
-        tenantId, //req.session.activeTenant.tenantId, // xeroTenantId: string        
-        new Date(startDateStr), // undefined, (not accepted) // ifModifiedSince?: Date
-        'Type=="ACCREC"', // where?: string
-        
-        undefined, // order?: string // 'reference DESC'
-        undefined, // iDs?: string[]            
-        ["XDWFPU221001"], // undefined// invoiceNumbers?: string[]
-        undefined, // contactIDs?: string[]
-        ['AUTHORISED'], // statuses?: string[] // ['AUTHORISED', 'PAID', 'DRAFT']
-        0, // page?: number            
-        false, // includeArchived?: boolean
-        false, // createdByMyApp?: boolean
-        4, // unitdp?: number // It stands for "Unit Decimal Places" and specifies the number of decimal places to use for the unit amount on the invoice line items.            
-        true, // summaryOnly?: boolean
+        tenantId,
+        new Date(ifModifiedSinceDate),
+        `Type=="ACCREC"`,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        ['AUTHORISED'],
+        0,
+        false,
+        false,
+        4,
+        true,
         {
           headers: {
-            'contentType': 'application/json'
-          }
+            'contentType': 'application/json',
+          },
         }
-      )
+      );
 
-      var invoicesContacts = invoices.body.invoices.map(item => item.contact.name)
-      var invoicesContacts = invoicesContacts.sort()
-      invoicesContacts.forEach(item => console.log(item))
+      const startDateMoment = moment(startDate);
 
-      const invoices2 = invoices.body.invoices[0]
-      var invoiceIDFound = invoices2.invoiceID
+      const filteredInvoices = invoices.body.invoices.filter((invoice) => {
+        const invoiceDateMoment = moment(invoice.date);
+        return invoiceDateMoment.isSameOrAfter(startDateMoment);
+      });
+
+      const contactsToPay = [];
+      for (let i = 0; i < filteredInvoices.length; i++) {
+        const contact = filteredInvoices[i].contact;
+        const contactInfo = [contact.contactID, contact.name];
+
+        if (!contactsToPay.toString().includes(contactInfo[1])) {
+          contactsToPay.push(contactInfo);
+        }
+      }
+
+      res.json({
+        consentUrl: await xero.buildConsentUrl(),
+        contacts: contactsToPay,
+      });
 
     } catch (error) {
       console.log(error);
     }
 
-    const payments: Payments = {
-      payments: [
-        {
-          invoice: {
-            invoiceID: invoiceIDFound
-          },
-          account: {
-            code: accountCode
-          },
-          date: yyyy__mm__dd, //"2020-03-12",
-          amount: amountNum,
-          reference: referenceStr
-        },
-      ]
-    };
-    
-    const createPaymentResponse = await xero.accountingApi.createPayments(tenantId, payments);
-
-    console.log("createPaymentResponse:", createPaymentResponse);
-
-    const getPaymentResponse = await xero.accountingApi.getPayment(tenantId, createPaymentResponse.body.payments[0].paymentID);
-
-    res.setHeader("Content-Type", "application/json; charset=utf-8");
-    res.status(200).json({
-      consentUrl: await xero.buildConsentUrl(),
-      authenticated: authenticationData(req, res),
-      count: getPaymentsResponse.body.payments.length,
-      newPayment: createPaymentResponse.body.payments[0].paymentID,
-      getPayment: getPaymentResponse.body.payments[0].invoice.contact.name,
-      paymentAmount: amountNum.toString()
-    });
-
   } catch (e) {
-    // res.status(res.statusCode);
-    // res.render("shared/error", {
-    //   consentUrl: await xero.buildConsentUrl(),
-    //   error: e
-    // });
-
     res.setHeader("Content-Type", "application/json");
     res.status(res.statusCode);
     res.json({
@@ -359,7 +534,6 @@ export async function payments(req: Request, res: Response) {
     });
   }
 }
-*/
 
 let isProcessingPayment = false;
 
@@ -373,37 +547,34 @@ export async function payments(req: Request, res: Response) {
     // Set the flag to indicate a payment is being processed.
     isProcessingPayment = true;
 
-    // ------
+    const data = req.body;
 
-    var cs = "XDWFPU221001" // Cooperativa Q17
-    const yy = cs.slice(6,8)
-    const startDateStr = `20${yy}/01/01`
+    console.log('data:', data);
 
-    var referenceStr = 'XFAP5 Residência Unifamiliar / Banco'
-    var referenceStr = 'XFUP5 Plano de Pormenor / Banco'
-    var accountCode = "B01" // WALLET
-    var accountCode = "B05" // BIM1
-    // var accountCode = "B06" // BIM2
-
-    var yyyy__mm__dd = "2023-04-19"
-    var amountNum = 9.11
-
-    var tenantId = "33b67fb1-e1c6-414c-bc39-c4305af2146f" // X-DIM
+    const invoiceNumber = data.invoiceNumber;
+    var tenantId = data.tenantId
+    const yy = invoiceNumber.slice(6,8)
+    const ifModifiedSinceDate = `20${yy}/01/01`
+    var referenceStr = data.paymentReference
+    var accountCode = data.accountCode
+    const paymentDate = new Date(data.paymentDate);
+    const formattedPaymentDate = paymentDate.toISOString().slice(0, 10);
+    var amountNum = Number(data.paymentAmount) //1010
 
     //GET ALL
-   //  const getPaymentsResponse = await xero.accountingApi.getPayments(req.session.activeTenant.tenantId);
+    //  const getPaymentsResponse = await xero.accountingApi.getPayments(req.session.activeTenant.tenantId);
     const getPaymentsResponse = await xero.accountingApi.getPayments(tenantId);
 
     try {
 
       const invoices = await xero.accountingApi.getInvoices(
         tenantId, //req.session.activeTenant.tenantId, // xeroTenantId: string        
-        new Date(startDateStr), // undefined, (not accepted) // ifModifiedSince?: Date
+        new Date(ifModifiedSinceDate), // undefined, (not accepted) // ifModifiedSince?: Date
         'Type=="ACCREC"', // where?: string
         
         undefined, // order?: string // 'reference DESC'
         undefined, // iDs?: string[]            
-        ["XDWFPU221001"], // undefined// invoiceNumbers?: string[]
+        [invoiceNumber], // undefined// invoiceNumbers?: string[]
         undefined, // contactIDs?: string[]
         ['AUTHORISED'], // statuses?: string[] // ['AUTHORISED', 'PAID', 'DRAFT']
         0, // page?: number            
@@ -425,6 +596,8 @@ export async function payments(req: Request, res: Response) {
       const invoices2 = invoices.body.invoices[0]
       var invoiceIDFound = invoices2.invoiceID
 
+      console.log("invoiceIDFound:", invoiceIDFound);
+
     } catch (error) {
       console.log(error);
     }
@@ -438,7 +611,7 @@ export async function payments(req: Request, res: Response) {
           account: {
             code: accountCode
           },
-          date: yyyy__mm__dd, //"2020-03-12",
+          date: formattedPaymentDate, //yyyy__mm__dd, //"2020-03-12",
           amount: amountNum,
           reference: referenceStr
         },
@@ -460,7 +633,6 @@ export async function payments(req: Request, res: Response) {
       getPayment: getPaymentResponse.body.payments[0].invoice.contact.name,
       paymentAmount: amountNum.toString()
     });
-
 
   } catch (e) {
     // Handle errors as before.

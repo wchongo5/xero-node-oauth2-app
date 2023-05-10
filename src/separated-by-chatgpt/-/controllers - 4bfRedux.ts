@@ -224,7 +224,7 @@ export async function getAccessToken(req: Request, res: Response) {
     }
   } catch (error) {
     res.status(401).json({ error: error.message });
-  }§
+  }
 }
 
 let isProcessingPayment = false;

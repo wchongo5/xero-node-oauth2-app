@@ -1,46 +1,24 @@
-import React, { useState } from "react";
-import axios from "axios";
+import React from "react";
+import { useSelector, useDispatch } from "react-redux";
+// import { fetchPayments } from "../redux/paymentsSlice";
+import { fetchPayments } from '../redux/paymentsSlice';
 import "./payments.css";
 
 const Payments = () => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [paymentsData, setPaymentsData] = useState(null);
+  const dispatch = useDispatch();
+  const paymentsData = useSelector((state) => state.payments.paymentsData);
+  const loading = useSelector((state) => state.payments.loading);
+  const error = useSelector((state) => state.payments.error);
 
-  const invoiceNumberList = [["XDWFPU221001", "Coop Q17"], ["XDWFAP231001", "Rosa Palate"], ["XDWFAP230901", "Fidalgo Coss"]];
+  const tenantIdList = [["33b67fb1-e1c6-414c-bc39-c4305af2146f", "X-DIM"], ["89a7e972-1cbb-441a-a98d-00f101c5dd8f", "X-DIM LDA"]];
   const accountCodeList = [["B01", "WALLET"], ["B05", "BIM1"], ["B06", "BIm2"]];
-  const tenantIdList = [["33b67fb1-e1c6-414c-bc39-c4305af2146f", "X-DIM"], ["ID02", "X-DIM LDA"]];
+  const invoiceNumberList = [["XDWFPU221001", "Coop Q17"], ["XDWFAP231001", "Rosa Palate"], ["XDWFAP230901", "Fidalgo Coss"]];
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setLoading(true);
-
-    try {
-      const formData = new FormData(event.target);
-
-      const response = await axios.get("http://localhost:3000/payments", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Accept: "application/json",
-        },
-      });
-
-      console.log(response);
-
-      if (response.status !== 200) {
-        throw new Error(`HTTP error ${response.status}`);
-      }
-
-      const data = response.data;
-
-      console.log(data);
-
-      setPaymentsData(data);
-      setLoading(false);
-    } catch (e) {
-      setError(e.message);
-      setLoading(false);
-    }
+    const formData = new FormData(event.target);
+    const data = JSON.stringify(Object.fromEntries(formData.entries()));
+    dispatch(fetchPayments(data));
   };
 
   return (
@@ -57,6 +35,16 @@ const Payments = () => {
         </select>
         <br />
 
+        <label>Account Code:</label>
+        <select name="accountCode">
+          {accountCodeList.map((accountCode) => (
+            <option key={accountCode[0]} value={accountCode[0]}>
+              {accountCode[1]}
+            </option>
+          ))}
+        </select>
+        <br />
+
         <label>Invoice Number:</label>
         <select name="invoiceNumber">
           {invoiceNumberList.map((invoiceNumber) => (
@@ -67,15 +55,6 @@ const Payments = () => {
         </select>
         <br />
 
-        <label>Account Code:</label>
-        <select name="accountCode">
-          {accountCodeList.map((accountCode) => (
-            <option key={accountCode[0]} value={accountCode[0]}>
-              {accountCode[1]}
-            </option>
-          ))}
-        </select>
-        <br />
 
         <label>Payment Reference:</label>
         <input type="text" name="paymentReference" />

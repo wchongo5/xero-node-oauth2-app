@@ -1,6 +1,6 @@
 import React from 'react';
-import Head from './Head';
-import Header from './Header';
+import Head from './Head-Xero';
+import Header from './Header-Xero';
 
 const HomeComponent = ({ authenticated }) => {
   const decodedIdToken = authenticated?.decodedIdToken || '';

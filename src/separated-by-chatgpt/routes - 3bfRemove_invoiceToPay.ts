@@ -9,21 +9,19 @@ import {
   disconnect,
   revokeToken,
   webhooks,
-} from "./controller-xero";
-import { contactsGroup, contactGroups } from "./controller-contact";
-import { taxRates } from "./controller-tax"
-import {
-  bankTransfers,
-  bankTransactions,
-} from "./controller-bank";
-import { organisations } from "./controller-organisations"
-import { accountsBank } from "./controller-account"
-import {
   invoicePay,
+  organisations,
+  accounts,
   contactsToPayByInvoices,
   invoicesToPayByContact,
-} from "./controller-invoice";
-
+  // invoiceToPay, // COMMENTED TO AVOID ERROR
+  // bankTransfer_get,
+  bankTransfers,
+  accounts_test,
+  taxRates,
+  contactsTransactions,
+  contactGroups,
+} from "./controller-xero";
 import { authenticationData, ensureAuthenticated } from "./helpers";
 import axios from "axios";
 
@@ -48,14 +46,22 @@ router.post("/webhooks", webhooks);
 // -------------- APPING
 router.get("/organisation", organisations);
 router.get("/organisations", organisations);
-router.get("/accounts-bank", accountsBank);
+router.get("/accounts", accounts);
+router.get("/accounts-test", accounts_test);
 router.post("/contacts-to-pay", contactsToPayByInvoices);
 router.post("/invoices-to-pay", invoicesToPayByContact);
+
+/* // REMOVED IN NES+XT SAVE // COMMENTED TO AVOID ERROR
+
+router.post("/invoice-to-pay", invoiceToPay);
+
+*/
+
 router.post("/invoice-pay", invoicePay);
+// router.get("/bankTransfer_get", bankTransfer_get);
 router.post("/bank-transfers", bankTransfers);
-router.post("/bank-transactions", bankTransactions);
 router.get("/tax-rates", taxRates);
-router.post("/contacts-group", contactsGroup);
+router.get("/contacts-transactions", contactsTransactions);
 router.post("/contact-groups", contactGroups);
 
 
